@@ -1,7 +1,7 @@
 <template>
     <div class="vselect_box">
         <label>{{ label }}</label>
-        <select v-model="modelValue" @change="changeOption">
+        <select :v-model="modelValue" @change="changeOption">
             <option disabled value="">Выбор из списка</option>
             <option
                 v-if="type_select == 'dict'"

@@ -20,16 +20,15 @@
     </div>
 </template>
 <script lang="ts">
-import PrettyJson from "../pyjs_log/prettyJson/prettyJson.vue";
-import TestUseServer from "../../test_stend/components/testUseServer.vue";
-import PyjsLog from "../pyjs_log/pyjs_log.vue";
+import TestUseServer from "./components/testUseServer.vue";
+import PyjsLog from "wbs/vue/pyjs_log/pyjs_log.vue";
 import {
     ClientsWbsRequest,
     ClientsWbsRequest_GetInfoServer_id,
     ClientsWbsRequest_Mod,
     ServerWbsResponse,
-} from "../../wbs_type";
-import { SendParamsBefore, TRollbackErrorCode } from "../../wbs";
+} from "wbs/wbs_type";
+import { SendParamsBefore, TRollbackErrorCode } from "wbs/wbs";
 
 function strJSON(obj: object) {
     return JSON.stringify(obj, null, 4);
@@ -54,7 +53,6 @@ const port = "9999";
 export default {
     components: {
         PyjsLog,
-        PrettyJson,
         TestUseServer,
     },
     data() {
@@ -237,7 +235,7 @@ export default {
 };
 </script>
 <style lang="scss">
-@import "../gcolor.scss";
+@import "wbs/vue/gcolor.scss";
 
 .app {
     background: $ЦветФона;

@@ -1,4 +1,19 @@
 const { defineConfig } = require('@vue/cli-service')
-module.exports = defineConfig({
-  transpileDependencies: true
-})
+const path = require('path');
+
+module.exports = {
+  ...defineConfig({
+    transpileDependencies: true
+  }),
+
+  outputDir: '/media/denis/dd19b13d-bd85-46bb-8db9-5b8f6cf7a825/test/test_pywjs/' + 'src',
+  publicPath: './',
+  configureWebpack: {
+    resolve: {
+      alias: {
+        'wbs': path.resolve('/media/denis/dd19b13d-bd85-46bb-8db9-5b8f6cf7a825/MyProject/pyw_js/'),
+        'vue_xable': path.resolve('/media/denis/dd19b13d-bd85-46bb-8db9-5b8f6cf7a825/MyProject/vue_xable/')
+      },
+    },
+  },
+}

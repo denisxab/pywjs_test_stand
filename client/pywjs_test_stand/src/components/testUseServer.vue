@@ -12,11 +12,6 @@
     <h2 class="label">{{ label }}</h2>
     <div class="use_server">
         <div class="request">
-            <div class="setting_connect">
-                <input type="text" :placeholder="`token=${token}`" disabled />
-                <input type="text" :placeholder="`host=${host}`" disabled />
-                <input type="text" :placeholder="`port=${port}`" disabled />
-            </div>
             <vtextarea
                 :background="`#3b4252`"
                 :color="`#eceff4`"
@@ -51,10 +46,10 @@
 </template>
 <script lang="ts">
 import Vselect from "./UI/vselect.vue";
-import PrettyJson from "../../pyjs_log/prettyJson/prettyJson.vue";
 import Vtextarea from "./UI/vtextarea.vue";
+import PrettyJson from "wbs/vue/pyjs_log/prettyJson/prettyJson.vue";
 import Vbutton from "./UI/vbutton.vue";
-import { TTypeSend as TTypeSend, TTemplateTestSend } from "../../clients/vue/App.vue";
+import { TTypeSend as TTypeSend, TTemplateTestSend } from "../App.vue";
 
 export default {
     emits: [
@@ -65,7 +60,7 @@ export default {
         "send_before",
     ],
     // Компоненты
-    components: { Vbutton, Vtextarea, PrettyJson, Vselect },
+    components: { Vbutton, Vtextarea, Vselect, PrettyJson },
     // Аргументы
     props: {
         // На какой h_id ожидать ответ сервера
@@ -126,7 +121,7 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
-@import "../../gcolor.scss";
+@import "wbs/vue/gcolor.scss";
 
 .help {
     text-align: center;
@@ -145,21 +140,6 @@ export default {
         display: flex;
         flex-direction: column;
         border: $БазовыйЦветПосещеннойСсылки solid 1px;
-        .setting_connect {
-            display: flex;
-            flex-direction: row;
-            justify-content: center;
-            padding: 4px;
-            input {
-                border-radius: 4px;
-                margin: 2px;
-                color: $ПриглушенныйЦветТекста;
-                background: $ЦветФонаВсплывающегоОкна;
-                border: none;
-                padding: 4px;
-                width: 100%;
-            }
-        }
         .vbutton {
             margin-top: 6px;
         }

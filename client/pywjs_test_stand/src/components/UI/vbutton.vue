@@ -16,7 +16,8 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
-@import "../../../gcolor.scss";
+@import "wbs/vue/gcolor.scss";
+
 
 button {
     margin-left: 4px;
