@@ -18,9 +18,6 @@
             "@/*": ["src/*"],
             "wbs/*": [
                 "/media/denis/dd19b13d-bd85-46bb-8db9-5b8f6cf7a825/MyProject/pyw_js/*"
-            ],
-            "vue_xable/*": [
-                "/media/denis/dd19b13d-bd85-46bb-8db9-5b8f6cf7a825/MyProject/vue_xable/*"
             ]
         },
         "lib": ["esnext", "dom", "dom.iterable", "scripthost"]

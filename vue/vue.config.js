@@ -12,7 +12,6 @@ module.exports = {
     resolve: {
       alias: {
         'wbs': path.resolve('/media/denis/dd19b13d-bd85-46bb-8db9-5b8f6cf7a825/MyProject/pyw_js/'),
-        'vue_xable': path.resolve('/media/denis/dd19b13d-bd85-46bb-8db9-5b8f6cf7a825/MyProject/vue_xable/')
       },
     },
   },
