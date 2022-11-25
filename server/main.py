@@ -2,7 +2,7 @@ import asyncio
 from pathlib import Path
 from pywjs.wbs.server import wbs_main_loop
 from pywjs.wbs.handle import WbsHandle
-from pywjs.wbs.logger import ABC_logger, defaultLogger
+from pywjs.wbs.logger import ABC_logger, defaultLogger, EmptyLogger
 from explorer_user import MyWbsFunc, MyWbsSubscribe
 
 
@@ -20,7 +20,7 @@ class UserWbsHandle(WbsHandle):
 
 
 host = "localhost"
-port = 9980
+port = 9999
 
 if __name__ == '__main__':
     print("RUN")
