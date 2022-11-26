@@ -6,74 +6,13 @@ import pwd
 import stat
 from datetime import datetime
 from typing import Literal
-from  pywjs.wbs.subscribe import UserWbsSubscribe
-from pywjs.wbs.allowed_func import Transaction, UserWbsFunc
+from pywjs.wbs.subscribe import UserWbsSubscribe
+from pywjs.wbs.allowed_func import Transaction, AllowWbsFunc, StdAllowWbsFunc
 from asyncio import create_subprocess_shell, subprocess
 
 
-class MyWbsFunc(UserWbsFunc):
+class MyWbsFunc(AllowWbsFunc, StdAllowWbsFunc):
 
-    def sum(a: int | str, b: int | str):
-        return int(a) + int(b)
-
-    # Асинхронная функция
-    async def os_exe_async(command: str) -> dict:
-        """
-        Выполнить асинхронно команды(command) OS.
-        """
-        # Выполняем команду
-        p = await create_subprocess_shell(
-            cmd=command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
-        # Получить результат выполнения команды
-        stdout, stderr = await p.communicate()
-        return dict(
-            stdout=stdout.decode(),
-            stderr=stderr.decode(),
-            cod=p.returncode,
-            cmd=command,
-        )
-
-    def createLinkToFile(pathFile: str, pathDirLinks: str, extendsFile: Literal['txt', 'pdf', 'png', 'jpg', 'webp']) -> str:
-        """Создать символьную ссылку на файл `pathFile`, и поместить ей в путь `pathDirLinks`
-
-        Узнать размер символьной ссылки, у меня это 10 бит
-        >> ls -l
-
-        :param pathFile: Путь к файлу на который нужно сделать символьную ссылку
-        :param pathDirLinks: Путь к папке в которую нужно поместить символьную ссылку
-        :return: Имя символьного файла
-        """
-
-        pathFile = Path(pathFile).resolve()
-        pathDirLinks = Path(pathDirLinks).resolve()
-        # Создаем путь если его нет
-        if not os.path.exists(pathDirLinks):
-            os.makedirs(pathDirLinks)
-        # Имя ссылки = `link_ЗахешированныйПолныйПутьMD5__ИсходноеРасширениеФайла_.расширение`
-        nameLinkFile: str = f"link_{hashlib.md5(str(pathFile).encode('utf-8')).hexdigest()}__{pathFile.suffix.lower().replace('.','_')}.{extendsFile}"
-        absPathLink = pathDirLinks/nameLinkFile
-
-        if absPathLink.exists():
-            if not absPathLink.is_symlink():
-                absPathLink.symlink_to(pathFile)
-        else:
-            absPathLink.symlink_to(pathFile)
-        return str(absPathLink.name)
-
-    def clearLink(pathDirLinks: str, template='link_*'):
-        """Удалить все ссылочные файлы
-
-        :param pathLink: Путь к папке с ссылочными файлами
-        """
-        pLink = Path(pathDirLinks).resolve()
-        for f in pLink.glob(template):
-            os.remove(f)
-        return True
-
-    # Синхронная функция
     def getFileFromPath(path: str) -> list[dict[str, dict]]:
         """Получить список Файлов в указанной директории
 

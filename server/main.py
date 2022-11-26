@@ -3,7 +3,8 @@ from pathlib import Path
 from pywjs.wbs.server import wbs_main_loop
 from pywjs.wbs.handle import WbsHandle
 from pywjs.wbs.logger import ABC_logger, defaultLogger, EmptyLogger
-from explorer_user import MyWbsFunc, MyWbsSubscribe
+
+from logic import MyWbsFunc, MyWbsSubscribe
 
 
 class UserWbsHandle(WbsHandle):
