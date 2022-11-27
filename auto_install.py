@@ -1,5 +1,5 @@
 """
-Установка виртуального окружения `Python`, и зависимостей из файла `./requirements.txt`
+Установка виртуального окружения `Python`, и зависимостей из файла `./pyproject.toml`
 """
 
 import re
@@ -14,17 +14,22 @@ setting = dict(
     download_link='https://www.python.org/downloads/'
 )
 
+path_app = Path(__file__).parent.resolve()
+path_server = path_app / 'server'
+path_env = path_server / 'venv'
+venv_obj = venv.EnvBuilder(with_pip=True, upgrade_deps=True)
+venv_context = venv_obj.ensure_directories(str(path_env))
+path_python = venv_context.env_exec_cmd
+
 
 # 1. Проверить версию текущего python
 def step1(path_app: Path):
     python_version = sys.version_info
     if python_version.major >= setting['major'] and python_version.minor >= setting['minor']:
-        path_server = path_app / 'server'
-        path_env = path_server / 'venv'
-        path_python = step2(path_env=path_env)
+        step2(path_env=path_env)
         step3(
             path_python=path_python,
-            path_requirements=path_server/'requirements.txt'
+            path_server=path_server
         )
         step4(
             path_uninstall=path_app / 'auto_uninstall.py'
@@ -34,6 +39,7 @@ def step1(path_app: Path):
             path_python=path_python
         )
         step6(path_gitignore=path_app/'.gitignore')
+        step7(path_auto_update=path_app/'auto_update.py')
     else:
         print(
             f"Версия Python не подходит, необходимо иметь Python{setting['major']}.{setting['minor']}\nСсылка для скачивания:\t{setting['download_link']}")
@@ -42,19 +48,21 @@ def step1(path_app: Path):
 # 2. Создать виртуальное окружение
 def step2(path_env: Path):
     # Создаем виртуально окружение в папке `./venv`
-    v = venv.EnvBuilder(with_pip=True, upgrade_deps=True)
-    v.create(str(path_env)) 
-    # Устанавливаем зависимости из `requirements.txt
-    context = v.ensure_directories(str(path_env))
-    return context.env_exec_cmd
+    venv_obj.create(str(path_env))
 
 
-# 3. Установить зависимости из файла `./requirements.txt` в ВО
-def step3(path_python: str, path_requirements: Path):
-    for lib in path_requirements.read_text().split('\n'):
-        if lib:
-            cmd = [path_python, '-m', 'pip', 'install', lib]
-            subprocess.check_call(cmd)
+# 3. Установить зависимости из файла `./pyproject.toml` в ВО
+def step3(path_python: str, path_server: Path):
+    # Установка `poetry`
+    subprocess.check_call([path_python, '-m', 'pip', 'install', 'poetry'])
+    # Обновить файлы блокировки
+    subprocess.run(
+        [path_python, '-m', 'poetry', 'lock'], cwd=path_server,
+    )
+    # Синхронизируем модули с файлом `pyproject.toml`
+    subprocess.run(
+        [path_python, '-m', 'poetry', 'install', '--sync'], cwd=path_server,
+    )
 
 
 # 4. Создать файл для удаления venv
@@ -80,11 +88,16 @@ def step5(path_run: Path, path_python: Path):
     # Относительный путь к venv
     path_python = re.sub('.+(venv.+)', '\g<1>', path_python)
     path_run.write_text(f"""
-from pathlib import Path
-import webbrowser
 import os
+import webbrowser
+from pathlib import Path
 
-sdir = Path(__file__).parent 
+from auto_update import check_update
+
+sdir = Path(__file__).parent
+
+# Проверить необходимость синхронизации и обновления
+check_update(only_info=False)
 # Запустить html файл, в браузере по умолчанию
 webbrowser.open(f"file://{{sdir / 'client' / 'index.html'}}")
 # Запустить файл `main.py`
@@ -99,12 +112,72 @@ def step6(path_gitignore: Path):
 __pycache__
 log
 server/venv
-node_modules
+server/plagins
 *.log
 *.sqlite
     """)
 
 
+# 7. Создать файл для автоматического обновления
+def step7(path_auto_update: Path):
+    path_auto_update.write_text('''
+""" 
+Автоматическое обновление программы
+"""
+
+import subprocess
+from datetime import datetime
+from auto_install import step3, path_server, path_python
+
+
+def check_update(only_info=True):
+    syncGit(only_info=only_info)
+
+def syncGit(only_info=True):
+    """
+    only_info: Если True, то тогда только проинформировать о различиях, и не пытаться(откатиться/обновиться)
+    """
+    """Синхронизация проекта"""
+    origin = 'origin'
+    # Получить имя текущей ветки, оно будет считаться именем для удаленной ветки.
+    select_branch: str = subprocess.run(
+        'git --no-pager branch --no-color --show-current', shell=True,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8'
+    ).stdout.replace('\\n', '')
+    if not select_branch:
+        raise ValueError("Пустая ветка")
+    # Проверить синхронизацию текущего локального проекта(даже если изменения небыли за комичены), с удаленной веткой.
+    diff: str = subprocess.run(
+        f'git --no-pager diff {origin}/{select_branch} --raw --name-status', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8'
+    ).stdout.replace('\\n', '')
+    if diff:
+        #
+        # Если есть различия в локальной и удаленной ветки
+        #
+        print('GitReset')
+        if only_info:
+            print('OnlyInfo')
+            return False
+        # Делаем коммит текущих локальных изменений.
+        subprocess.run('git add -A', shell=True, check=True)
+        subprocess.run(
+            f"git commit -m 'CommitByAutoUpdate:{datetime.now()}'", shell=True, check=True)
+        # Получаем всю информацию об изменениях на удаленной ветки.
+        subprocess.run('git fetch --all', shell=True, check=True)
+        # Принудительно(во всех спорных случая берем данные из удаленной ветки) синхронизируем локальную ветку с удаленной.
+        subprocess.run(
+            f'git reset --hard {origin}/{select_branch}', shell=True)
+        # Выполняем синхронизацию зависимостей в виртуальном окружение `Python`
+        syncPyVenvDependents()
+    else:
+        # Нет различий локальной ветки от удаленной. Или не удалось узнать различий с удаленной веткой, из за отсутствия связи.
+        ...
+
+def syncPyVenvDependents():
+    """Синхронизация зависимостей для виртуального окружения Python"""
+    step3(path_python=path_python, path_server=path_server)
+    ''')
+
+
 if __name__ == '__main__':
-    path_app = Path(__file__).parent.resolve()
     step1(path_app)
